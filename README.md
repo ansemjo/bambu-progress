@@ -4,6 +4,9 @@ Simple script using [bambu-connect](https://github.com/mattcar15/bambu-connect) 
 
 ![](screenshot.png)
 
+[![No Maintenance Intended](https://unmaintained.tech/badge.svg)](https://unmaintained.tech/)<br>
+_I do not intend to maintain this project for issues or pull requests. It is a personal project I published in case it's useful to somebody else._
+
 ### Usage
 
 * Install requirements from `requirements.txt` into a vitualenv `.venv/`.
