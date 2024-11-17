@@ -1,4 +1,5 @@
 import os, subprocess, dotenv
+import urllib.request as request
 from bambu_connect import BambuClient, PrinterStatus
 from dateutil.relativedelta import relativedelta as delta
 from textual.app import App, ComposeResult
@@ -11,6 +12,7 @@ dotenv.load_dotenv()
 HOSTNAME = os.environ.get("BAMBU_HOSTNAME")
 ACCESS_CODE = os.environ.get("BAMBU_ACCESS_CODE")
 SERIAL = os.environ.get("BAMBU_SERIAL")
+NTFY_TOPIC = os.environ.get("BAMBU_NTFY_TOPIC")
 bambu = BambuClient(HOSTNAME, ACCESS_CODE, SERIAL)
 
 # textual application window
@@ -103,8 +105,12 @@ class BambuProgress(App):
     def notify_done(self, s: PrinterStatus):
         old, new = self.laststate, s.gcode_state
         if old != None and old != new and new == "FINISH":
-            subprocess.Popen(["notify-send", "--app-name=bambu-progress",
-                "Finished printing", f"Your print {s.subtask_name!r} is done."])
+            message = f"Your print {s.subtask_name!r} is done."
+            # desktop notification
+            subprocess.Popen(["notify-send", "--app-name=bambu-progress", "Finished printing", message])
+            if NTFY_TOPIC:
+                # optional ntfy.sh message
+                request.urlopen(request.Request(f"https://ntfy.sh/{NTFY_TOPIC}", message.encode("utf-8"), headers={ "content-type": "text/plain" }))
         self.laststate = new
 
     def update_all(self, s: PrinterStatus):
