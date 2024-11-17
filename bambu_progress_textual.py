@@ -1,4 +1,4 @@
-import os, subprocess, dotenv
+import os, subprocess, dotenv, time
 import urllib.request as request
 from bambu_connect import BambuClient, PrinterStatus
 from dateutil.relativedelta import relativedelta as delta
@@ -30,6 +30,7 @@ class BambuProgress(App):
     .fan .bar--bar, .fan .bar--complete { color: lightblue; }
     #progress .bar--bar { color: green; }
     #layers .bar--bar { color: darkgreen; }
+    #sequence { color: gray; }
     """
 
     def compose(self) -> ComposeResult:
@@ -40,7 +41,8 @@ class BambuProgress(App):
                 with Horizontal():
                     yield Label("Status  ")
                     # s.gcode_state (s.print_type) s.subtask_name
-                    yield Label("UNKNOWN", id="status")
+                    yield Label("", id="status")
+                    yield Label("waiting", id="sequence")
                 with Horizontal():
                     # s.mc_percent (s.mc_remaining_time)
                     yield Label("Total   ")
@@ -114,6 +116,7 @@ class BambuProgress(App):
         self.laststate = new
 
     def update_all(self, s: PrinterStatus):
+        self.query_one("#sequence").update(f"  {s.sequence_id}")
         # ignore updates before dump_info returned once
         if s.gcode_state is None: return
         self.update_progress(s)
@@ -126,7 +129,8 @@ app = BambuProgress()
 
 # dump full info once on connection
 def onconnect():
-    # time.sleep(0.5)
+    bambu.dump_info()
+    time.sleep(1)
     bambu.dump_info()
 
 bambu.start_watch_client(app.update_all, onconnect)
