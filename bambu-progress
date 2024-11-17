@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")" )"
+gnome-terminal --zoom 1.5 --geometry 75x12 --working-directory "$PWD" -- \
+  .venv/bin/python3 bambu_progress_textual.py
